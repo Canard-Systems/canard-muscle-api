@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
@@ -33,5 +34,16 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return new JsonResponse('User created successfully', 201);
+    }
+
+    #[Route('/api/me', name: 'api_me', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function me(): JsonResponse
+    {
+        $user = $this->getUser();
+        return $this->json([
+            'email' => $user->getUserIdentifier(),
+            'roles' => $user->getRoles(),
+        ]);
     }
 }
