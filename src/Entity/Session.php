@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\SessionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -32,6 +34,17 @@ class Session
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
     private ?Plan $plan = null;
+
+    /**
+     * @var Collection<int, SessionExercise>
+     */
+    #[ORM\OneToMany(targetEntity: SessionExercise::class, mappedBy: 'session')]
+    private Collection $sessionExercises;
+
+    public function __construct()
+    {
+        $this->sessionExercises = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -94,6 +107,36 @@ class Session
     public function setPlan(?Plan $plan): static
     {
         $this->plan = $plan;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SessionExercise>
+     */
+    public function getSessionExercises(): Collection
+    {
+        return $this->sessionExercises;
+    }
+
+    public function addSessionExercise(SessionExercise $sessionExercise): static
+    {
+        if (!$this->sessionExercises->contains($sessionExercise)) {
+            $this->sessionExercises->add($sessionExercise);
+            $sessionExercise->setSession($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSessionExercise(SessionExercise $sessionExercise): static
+    {
+        if ($this->sessionExercises->removeElement($sessionExercise)) {
+            // set the owning side to null (unless already changed)
+            if ($sessionExercise->getSession() === $this) {
+                $sessionExercise->setSession(null);
+            }
+        }
 
         return $this;
     }
