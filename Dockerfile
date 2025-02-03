@@ -1,7 +1,7 @@
-# Utiliser une image PHP officielle
+# Use official PHP CLI image
 FROM php:8.2-cli
 
-# Installer les extensions PHP nécessaires
+# Install necessary system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -10,21 +10,32 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     && docker-php-ext-install pdo_mysql intl zip
 
-# Installer Composer depuis l'image officielle
+# Install Composer from the official image
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Définir le répertoire de travail
+# Define working directory
 WORKDIR /var/www/html
 
-# Copier le fichier composer.json et installer les dépendances
+# Copy dependencies configuration
 COPY composer.json composer.lock ./
+RUN mkdir -p bin && touch bin/console && chmod +x bin/console
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
+# Install dependencies as root
 RUN composer install --no-interaction --optimize-autoloader
 
-# Copier le reste des fichiers du projet
+# Copy the rest of the project files
 COPY . .
 
-# Exposer le port pour le serveur PHP
+# ✅ Create a non-root user
+RUN useradd -m -d /var/www/html -s /bin/bash appuser && \
+    chown -R appuser:appuser /var/www/html
+
+# ✅ Switch to non-root user
+USER appuser
+
+# Expose port 8000
 EXPOSE 8000
 
-# Commande par défaut (inutile si command est défini dans docker-compose.yml)
+# Default command
 CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
