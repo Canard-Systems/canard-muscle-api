@@ -52,10 +52,17 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\OneToMany(targetEntity: UserSetting::class, mappedBy: 'user')]
     private Collection $userSettings;
 
+    /**
+     * @var Collection<int, Exercise>
+     */
+    #[ORM\OneToMany(targetEntity: Exercise::class, mappedBy: 'createdBy')]
+    private Collection $exercisesCreated;
+
     public function __construct()
     {
         $this->plans = new ArrayCollection();
         $this->userSettings = new ArrayCollection();
+        $this->exercisesCreated = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -211,6 +218,36 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
             // set the owning side to null (unless already changed)
             if ($userSetting->getUser() === $this) {
                 $userSetting->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Exercise>
+     */
+    public function getExercisesCreated(): Collection
+    {
+        return $this->exercisesCreated;
+    }
+
+    public function addExercisesCreated(Exercise $exercisesCreated): static
+    {
+        if (!$this->exercisesCreated->contains($exercisesCreated)) {
+            $this->exercisesCreated->add($exercisesCreated);
+            $exercisesCreated->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeExercisesCreated(Exercise $exercisesCreated): static
+    {
+        if ($this->exercisesCreated->removeElement($exercisesCreated)) {
+            // set the owning side to null (unless already changed)
+            if ($exercisesCreated->getCreatedBy() === $this) {
+                $exercisesCreated->setCreatedBy(null);
             }
         }
 

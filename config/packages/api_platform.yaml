@@ -9,3 +9,4 @@ api_platform:
         jsonld: ['application/ld+json']
         json: ['application/json']
         jsonmergepatch: [ 'application/merge-patch+json' ]
+    use_symfony_listeners: true

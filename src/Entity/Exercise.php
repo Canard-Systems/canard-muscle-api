@@ -3,37 +3,86 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Controller\Exercise\GetUserExercisesController;
+use App\Controller\Exercise\ToggleExerciseStatusController;
+use App\Controller\Exercise\ValidateExerciseController;
+use App\State\ExerciseDataPersister;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ApiResource(
-    security: "is_granted('ROLE_ADMIN')"
+    operations: [
+        new GetCollection(
+            uriTemplate: '/exercises/user',
+            controller: GetUserExercisesController::class,
+            normalizationContext: ['groups' => ['exercise:read']],
+            security: "is_granted('ROLE_USER')",
+            read: false,
+            name: 'get_user_exercises'
+        ),
+        new GetCollection(
+            security: "is_granted('ROLE_ADMIN')",
+        ),
+        new Post(
+            denormalizationContext: ['groups' => ['exercise:write']],
+            security: "is_granted('ROLE_USER')",
+            processor: ExerciseDataPersister::class
+        ),
+        new Patch(
+            uriTemplate: '/exercises/{id}/toggle-status',
+            controller: ToggleExerciseStatusController::class,
+            normalizationContext: ['groups' => ['exercise:read']],
+            security: "is_granted('ROLE_ADMIN')",
+            read: false,
+            deserialize: false,
+            name: 'toggle_exercise_status'
+        )
+    ],
+    security: "is_granted('ROLE_USER')"
 )]
 class Exercise
 {
+    #[Groups(['exercise:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
+    #[Groups(['exercise:read', 'exercise:write'])]
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
-    private ?string $name;
+    private ?string $name = null;
 
+    #[Groups(['exercise:read', 'exercise:write'])]
     #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $description;
+    private ?string $description = null;
 
+    #[Groups(['exercise:read', 'exercise:write'])]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private ?string $muscles;
+    private ?string $muscles = null;
 
     /**
      * @var Collection<int, SessionExercise>
      */
+    #[Groups(['exercise:read'])]
     #[ORM\OneToMany(targetEntity: SessionExercise::class, mappedBy: 'exercise')]
     private Collection $sessionExercises;
+
+    #[Groups(['exercise:read', 'exercise:write'])]
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    private ?int $status = null;
+
+    #[Groups(['exercise:read'])]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'exercisesCreated')]
+    private ?User $createdBy = null;
 
     public function __construct()
     {
@@ -96,19 +145,20 @@ class Exercise
             $this->sessionExercises->add($sessionExercise);
             $sessionExercise->setExercise($this);
         }
-
         return $this;
     }
 
     public function removeSessionExercise(SessionExercise $sessionExercise): static
     {
         if ($this->sessionExercises->removeElement($sessionExercise)) {
-            // set the owning side to null (unless already changed)
             if ($sessionExercise->getExercise() === $this) {
                 $sessionExercise->setExercise(null);
             }
         }
-
         return $this;
     }
+    public function getStatus(): ?int { return $this->status; }
+    public function setStatus(?int $status): self { $this->status = $status; return $this; }
+    public function getCreatedBy(): ?User { return $this->createdBy; }
+    public function setCreatedBy(?User $createdBy): self { $this->createdBy = $createdBy; return $this; }
 }
