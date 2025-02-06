@@ -46,6 +46,11 @@ use Symfony\Component\Validator\Constraints as Assert;
             deserialize: false,
             name: 'toggle_exercise_status'
         ),
+        new Patch(
+            security: "object.getCreatedBy() == user",
+            securityMessage: "Tu ne peux modifier que les exercices que tu as créés.",
+            name: "patch_exercise"
+        ),
         new Delete(
             security: "object.getCreatedBy() == user",
             securityMessage: "Tu ne peux supprimer que les exercices que tu as créés.",
