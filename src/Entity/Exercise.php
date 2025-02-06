@@ -6,9 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Controller\Exercise\GetUserExercisesController;
+use App\Controller\Exercise\GetFilteredExercisesController;
 use App\Controller\Exercise\ToggleExerciseStatusController;
-use App\Controller\Exercise\ValidateExerciseController;
 use App\State\ExerciseDataPersister;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -21,15 +20,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
-            uriTemplate: '/exercises/user',
-            controller: GetUserExercisesController::class,
+            uriTemplate: '/exercises/filtered',
+            controller: GetFilteredExercisesController::class,
             normalizationContext: ['groups' => ['exercise:read']],
             security: "is_granted('ROLE_USER')",
             read: false,
-            name: 'get_user_exercises'
+            name: 'get_filtered_exercises'
         ),
         new GetCollection(
             security: "is_granted('ROLE_ADMIN')",
+            name: 'get_all_exercises'
         ),
         new Post(
             denormalizationContext: ['groups' => ['exercise:write']],
