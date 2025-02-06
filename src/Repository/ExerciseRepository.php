@@ -40,4 +40,13 @@ class ExerciseRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+    public function findFilteredForUser($user): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.status = 1')
+            ->orWhere('e.createdBy = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+    }
 }
