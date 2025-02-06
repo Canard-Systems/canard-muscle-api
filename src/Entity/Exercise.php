@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
@@ -44,6 +45,11 @@ use Symfony\Component\Validator\Constraints as Assert;
             read: false,
             deserialize: false,
             name: 'toggle_exercise_status'
+        ),
+        new Delete(
+            security: "object.getCreatedBy() == user",
+            securityMessage: "Tu ne peux supprimer que les exercices que tu as créés.",
+            name: "delete_exercise"
         )
     ],
     security: "is_granted('ROLE_USER')"
