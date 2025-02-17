@@ -3,14 +3,27 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
 use App\Repository\SessionRepository;
+use App\State\SessionDataPersister;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: SessionRepository::class)]
 #[ApiResource(
+    operations: [
+        new Get(
+            security: "is_granted('ROLE_ADMIN')",
+            name: 'get_all_sessions'
+        ),
+        New Post(
+            denormalizationContext: ['groups' => ['session:write']],
+            security: "is_granted('ROLE_USER')",
+            processor: SessionDataPersister::class,
+        )
+    ],
     security: "is_granted('ROLE_USER')"
 )]
 class Session
@@ -20,11 +33,8 @@ class Session
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $date = null;
-
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $type = null;
+    private ?string $name = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $duration = null;
@@ -41,6 +51,9 @@ class Session
     #[ORM\OneToMany(targetEntity: SessionExercise::class, mappedBy: 'session')]
     private Collection $sessionExercises;
 
+    #[ORM\ManyToOne(inversedBy: 'sessions')]
+    private ?User $user = null;
+
     public function __construct()
     {
         $this->sessionExercises = new ArrayCollection();
@@ -49,30 +62,6 @@ class Session
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getDate(): ?\DateTimeInterface
-    {
-        return $this->date;
-    }
-
-    public function setDate(?\DateTimeInterface $date): static
-    {
-        $this->date = $date;
-
-        return $this;
-    }
-
-    public function getType(): ?string
-    {
-        return $this->type;
-    }
-
-    public function setType(?string $type): static
-    {
-        $this->type = $type;
-
-        return $this;
     }
 
     public function getDuration(): ?int
@@ -111,6 +100,18 @@ class Session
         return $this;
     }
 
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, SessionExercise>
      */
@@ -137,6 +138,18 @@ class Session
                 $sessionExercise->setSession(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

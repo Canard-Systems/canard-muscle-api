@@ -19,6 +19,12 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\EventListener\JWTAuthenticationSuccessListener:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $userRepository: '@App\Repository\UserRepository'
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success }
 
-    # add more service definitions when explicit configuration is needed
+        # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
