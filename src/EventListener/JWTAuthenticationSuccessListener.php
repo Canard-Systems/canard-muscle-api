@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use App\Service\EncryptionService;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\ApiToken;
@@ -12,10 +13,13 @@ class JWTAuthenticationSuccessListener
     private EntityManagerInterface $entityManager;
     private UserRepository $userRepository;
 
-    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository)
+    private EncryptionService $encryptionService;
+
+    public function __construct(EntityManagerInterface $entityManager, UserRepository $userRepository, EncryptionService $encryptionService)
     {
         $this->entityManager = $entityManager;
         $this->userRepository = $userRepository;
+        $this->encryptionService = $encryptionService;
     }
 
     public function __invoke(AuthenticationSuccessEvent $event): void
@@ -41,6 +45,7 @@ class JWTAuthenticationSuccessListener
 
         // Sauvegarder le nouveau token
         $apiToken = new ApiToken();
+        $apiToken->setEncryptionService($this->encryptionService);
         $apiToken->setToken($jwt);
         $apiToken->setUser($user);
 

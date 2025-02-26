@@ -1,6 +1,6 @@
 api_platform:
-    title: Hello API Platform
-    version: 1.0.0
+    title: Api Canard Musclé
+    version: 0.0.1-beta
     defaults:
         stateless: true
         cache_headers:
