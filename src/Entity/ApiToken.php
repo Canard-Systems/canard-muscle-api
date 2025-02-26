@@ -3,7 +3,9 @@
 namespace App\Entity;
 
 use App\Repository\ApiTokenRepository;
+use App\Service\EncryptionService;
 use Doctrine\ORM\Mapping as ORM;
+use Random\RandomException;
 
 #[ORM\Entity(repositoryClass: ApiTokenRepository::class)]
 class ApiToken
@@ -13,27 +15,54 @@ class ApiToken
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'text', length: 1000 , unique: true)]
-    private ?string $token = null;
+    #[ORM\Column(type: 'text')]
+    private ?string $encryptedToken = null;
 
+    #[ORM\Column(type: 'string', length: 64, unique: true)]
+    private ?string $tokenHash = null;
     #[ORM\ManyToOne(inversedBy: 'apiTokens')]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $user = null;
+
+    private ?EncryptionService $encryptionService = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getToken(): ?string
+    public function setEncryptionService(EncryptionService $encryptionService): self
     {
-        return $this->token;
+        $this->encryptionService = $encryptionService;
+        return $this;
     }
 
-    public function setToken(string $token): static
+    public function setToken(string $token): self
     {
-        $this->token = $token;
+        if (!$this->encryptionService) {
+            throw new \LogicException('EncryptionService non défini.');
+        }
+
+        $this->encryptedToken = $this->encryptionService->encrypt($token);
+        $this->tokenHash = hash('sha256', $token);
 
         return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        if (!$this->encryptionService) {
+            throw new \LogicException('EncryptionService non défini.');
+        }
+
+        return $this->encryptedToken
+            ? $this->encryptionService->decrypt($this->encryptedToken)
+            : null;
+    }
+
+    public function getEncryptedToken(): ?string
+    {
+        return $this->encryptedToken;
     }
 
     public function getUser(): ?User

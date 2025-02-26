@@ -25,6 +25,8 @@ services:
             $userRepository: '@App\Repository\UserRepository'
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success }
-
+    App\Service\EncryptionService:
+        arguments:
+            $secretKey: '%env(API_SECRET_KEY)%'
         # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
