@@ -74,6 +74,7 @@ class Plan
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['plan:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -96,6 +97,7 @@ class Plan
      * @var Collection<int, Session>
      */
     #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'plan')]
+    #[Groups(['plan:read'])]
     private Collection $sessions;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
@@ -115,7 +117,12 @@ class Plan
     private ?array $trainingDays = [];
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['plan:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['plan:read', 'plan:write'])]
+    private ?int $duration = null; // weeks
 
     public function __construct()
     {
@@ -248,6 +255,18 @@ class Plan
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getDuration(): ?int
+    {
+        return $this->duration;
+    }
+
+    public function setDuration(?int $duration): static
+    {
+        $this->duration = $duration;
 
         return $this;
     }
