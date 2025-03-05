@@ -6,3 +6,9 @@ controllers:
 api_login:
     path: /api/login_check
     methods: POST
+api_register:
+    path: /api/register
+    methods: POST
+landing_page:
+    path: /
+    controller: App\Controller\LandingController::index
