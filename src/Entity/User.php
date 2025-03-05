@@ -3,48 +3,87 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Controller\User\GetUserMeController;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource]
+#[
+    ApiResource(
+        operations: [
+            new Get(
+                uriTemplate: '/me',
+                controller: GetUserMeController::class,
+                normalizationContext: ['groups' => ['user:read']],
+                security: "is_granted('ROLE_USER')",
+                securityMessage: "Tu ne peux voir que tes informations.",
+                read: false, // Désactive le chargement automatique de l'entité
+                name: 'get_me',
+            ),
+            new GetCollection(
+                security: "is_granted('ROLE_ADMIN')",
+                name: 'get_all_users'
+            ),
+            new Post(),
+            new Patch(),
+            new Delete(),
+
+        ],
+        forceEager: false
+    )
+]
 class User implements PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
+    #[Groups(['user:read'])]
     private ?string $email = null;
 
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private array $roles = [];
 
     #[ORM\Column(length: 255)]
     private ?string $password = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
     private ?int $age = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
     private ?int $weight = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read'])]
     private ?int $height = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['user:read'])]
     private ?string $gender = null;
 
     /**
      * @var Collection<int, Plan>
      */
     #[ORM\OneToMany(targetEntity: Plan::class, mappedBy: 'user')]
+    #[Groups(['user:read'])]
+    #[MaxDepth(1)]
     private Collection $plans;
 
     /**

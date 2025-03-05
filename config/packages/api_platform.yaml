@@ -10,3 +10,5 @@ api_platform:
         json: ['application/json']
         jsonmergepatch: [ 'application/merge-patch+json' ]
     use_symfony_listeners: true
+    eager_loading:
+        max_joins: 1000

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\User;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -9,7 +9,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
@@ -43,17 +42,5 @@ class UserController extends AbstractController
         $token = $JWTManager->create($user);
 
         return new JsonResponse(['message' => 'User created successfully', 'token' => $token], 201);
-    }
-
-    #[Route('/api/me', name: 'api_me', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
-    public function me(): JsonResponse
-    {
-        $user = $this->getUser();
-        return $this->json([
-            'id' => $user->getId(),
-            'email' => $user->getUserIdentifier(),
-            'roles' => $user->getRoles(),
-        ]);
     }
 }
