@@ -25,6 +25,7 @@ class PlanUpdatePersister implements ProcessorInterface
         $data->setTrainingDays($data->getTrainingDays());
         $data->setGoal($data->getGoal());
         $data->setName($data->getName());
+        $data->setDuration($data->getDuration());
         $this->entityManager->flush();
 
         return $data;
