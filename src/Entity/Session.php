@@ -80,7 +80,7 @@ class Session
      * @var Collection<int, Plan>
      */
     #[ORM\ManyToMany(targetEntity: Plan::class, inversedBy: 'sessions', cascade: ['persist', 'remove'])]
-    #[Groups(['session:read', 'session:write', 'plan:read'])]
+    #[Groups(['session:read', 'session:write'])]
     private Collection $plans;
 
     /**
