@@ -37,6 +37,7 @@ class SessionDataPersister implements ProcessorInterface
         $data->setDuration(0);
         $data->setDistance(0);
         $data->setUser($user);
+        $data->setCreatedAt((new \DateTimeImmutable())->setTimezone(new \DateTimeZone('Europe/Paris')));
         $this->entityManager->persist($data);
         $this->entityManager->flush();
         return $data;

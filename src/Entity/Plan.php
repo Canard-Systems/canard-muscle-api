@@ -89,15 +89,15 @@ class Plan
     #[Groups(['plan:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'plans')]
+    #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'plans')]
     #[Groups(['plan:read'])]
     private ?User $user = null;
 
     /**
      * @var Collection<int, Session>
      */
-    #[ORM\OneToMany(targetEntity: Session::class, mappedBy: 'plan')]
-    #[Groups(['plan:read'])]
+    #[ORM\ManyToMany(targetEntity: Session::class, mappedBy: 'plans', cascade: ['persist', 'remove'])]
+    #[Groups(['plan:read', 'plan:write'])]
     private Collection $sessions;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
@@ -194,7 +194,7 @@ class Plan
     {
         if (!$this->sessions->contains($session)) {
             $this->sessions->add($session);
-            $session->setPlan($this);
+            $session->addPlan($this);
         }
 
         return $this;
@@ -204,8 +204,8 @@ class Plan
     {
         if ($this->sessions->removeElement($session)) {
             // set the owning side to null (unless already changed)
-            if ($session->getPlan() === $this) {
-                $session->setPlan(null);
+            if ($session->getPlans() === $this) {
+                $session->removePlan($this);
             }
         }
 
