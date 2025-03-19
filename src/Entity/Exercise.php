@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -9,9 +10,9 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Exercise\GetFilteredExercisesController;
-use App\Controller\Exercise\ToggleExerciseStatusController;
 use App\Repository\ExerciseRepository;
 use App\State\ExerciseDataPersister;
+use App\State\ExerciseUpdatePersister;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -45,18 +46,10 @@ use Symfony\Component\Validator\Constraints as Assert;
             processor: ExerciseDataPersister::class
         ),
         new Patch(
-            uriTemplate: '/exercises/{id}/toggle-status',
-            controller: ToggleExerciseStatusController::class,
-            normalizationContext: ['groups' => ['exercise:read']],
-            security: "is_granted('ROLE_ADMIN')",
-            read: false,
-            deserialize: false,
-            name: 'toggle_exercise_status'
-        ),
-        new Patch(
             security: "object.getCreatedBy() == user",
             securityMessage: "Tu ne peux modifier que les exercices que tu as créés.",
-            name: "patch_exercise"
+            name: "update_exercise",
+            processor: ExerciseUpdatePersister::class
         ),
         new Delete(
             security: "object.getCreatedBy() == user",
@@ -90,7 +83,7 @@ class Exercise
     private ?string $muscles = null;
 
     #[Groups(['exercise:read'])]
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'exercisesCreated', fetch: 'EAGER')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'exercisesCreated')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $createdBy = null;
 
