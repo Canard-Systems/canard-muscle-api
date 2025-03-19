@@ -4,18 +4,15 @@ namespace App\Controller\Exercise;
 
 use App\Repository\ExerciseRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Response;
 
 class GetFilteredExercisesController extends AbstractController
 {
     private ExerciseRepository $exerciseRepository;
-    private Security $security;
 
-    public function __construct(ExerciseRepository $exerciseRepository, Security $security)
+    public function __construct(ExerciseRepository $exerciseRepository)
     {
         $this->exerciseRepository = $exerciseRepository;
-        $this->security = $security;
     }
 
     public function __invoke(): Response
@@ -26,7 +23,6 @@ class GetFilteredExercisesController extends AbstractController
         }
 
         $exercises = $this->exerciseRepository->findFilteredForUser($user);
-
         return $this->json($exercises, Response::HTTP_OK, [], ['groups' => 'exercise:read']);
     }
 }
