@@ -16,6 +16,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Attribute\MaxDepth;
 
 #[ORM\Entity(repositoryClass: SessionRepository::class)]
 #[ApiResource(
@@ -81,6 +82,7 @@ class Session
      */
     #[ORM\ManyToMany(targetEntity: Plan::class, inversedBy: 'sessions', cascade: ['persist', 'remove'])]
     #[Groups(['session:read', 'session:write'])]
+    #[MaxDepth(1)]
     private Collection $plans;
 
     /**
@@ -88,6 +90,7 @@ class Session
      */
     #[ORM\OneToMany(targetEntity: SessionExercise::class, mappedBy: 'session', cascade: ['persist', 'remove'])]
     #[Groups(['session:read', 'session:write'])]
+    #[MaxDepth(1)]
     private Collection $sessionExercises;
 
     #[ORM\ManyToOne(inversedBy: 'sessions')]
