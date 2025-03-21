@@ -104,10 +104,17 @@ class Session
     #[Groups(['session:read', 'session:write'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var Collection<int, ScheduledSession>
+     */
+    #[ORM\OneToMany(targetEntity: ScheduledSession::class, mappedBy: 'session')]
+    private Collection $scheduledSessions;
+
     public function __construct()
     {
         $this->plans = new ArrayCollection();
         $this->sessionExercises = new ArrayCollection();
+        $this->scheduledSessions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -228,5 +235,13 @@ class Session
     {
         $this->updatedAt = $updatedAt;
         return $this;
+    }
+
+    /**
+     * @return Collection<int, ScheduledSession>
+     */
+    public function getScheduledSessions(): Collection
+    {
+        return $this->scheduledSessions;
     }
 }

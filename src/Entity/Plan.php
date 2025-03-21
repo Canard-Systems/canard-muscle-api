@@ -122,11 +122,18 @@ class Plan
 
     #[ORM\Column(nullable: true)]
     #[Groups(['plan:read', 'plan:write'])]
-    private ?int $duration = null; // weeks
+    private ?int $duration = null;
+
+    /**
+     * @var Collection<int, ScheduledSession>
+     */
+    #[ORM\OneToMany(targetEntity: ScheduledSession::class, mappedBy: 'plan')]
+    private Collection $scheduledSessions; // weeks
 
     public function __construct()
     {
         $this->sessions = new ArrayCollection();
+        $this->scheduledSessions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -267,6 +274,36 @@ class Plan
     public function setDuration(?int $duration): static
     {
         $this->duration = $duration;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ScheduledSession>
+     */
+    public function getScheduledSessions(): Collection
+    {
+        return $this->scheduledSessions;
+    }
+
+    public function addScheduledSession(ScheduledSession $scheduledSession): static
+    {
+        if (!$this->scheduledSessions->contains($scheduledSession)) {
+            $this->scheduledSessions->add($scheduledSession);
+            $scheduledSession->setPlan($this);
+        }
+
+        return $this;
+    }
+
+    public function removeScheduledSession(ScheduledSession $scheduledSession): static
+    {
+        if ($this->scheduledSessions->removeElement($scheduledSession)) {
+            // set the owning side to null (unless already changed)
+            if ($scheduledSession->getPlan() === $this) {
+                $scheduledSession->setPlan(null);
+            }
+        }
 
         return $this;
     }
