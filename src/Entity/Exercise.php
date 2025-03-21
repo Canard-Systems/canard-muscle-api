@@ -36,7 +36,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             name: 'get_all_exercises'
         ),
         new Get(
-            security: "object.getCreatedBy() == user or is_granted('ROLE_ADMIN')",
+            security: "object.getCreatedBy() == user or is_granted('ROLE_ADMIN') or object.getStatus() == 1",
             securityMessage: "Tu ne peux voir que les exercices que tu as créés.",
             name: "get_exercise"
         ),
